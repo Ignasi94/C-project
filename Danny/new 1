@@ -1,0 +1,102 @@
+#include "direct.h"
+
+
+
+int consultaDir(DadesFitxer *df){
+		  char aux[18], buff[100];
+		  int numReal = 0;
+		  DIR *dir;
+		  //char hola[30] = "files/20170707-214516.dat\0";
+		  char *aux1;
+		  int bytes;  
+		  int llargadaNomFitxer, status;
+		  int numf = 0;
+		 
+		  //en ent estarà la info del archiu actual
+		  struct dirent *ent;
+	
+		  //Obrim directori actual
+		  dir = opendir ("Files");
+
+		  //mirem possibles errors d'opertura
+		  if (dir == NULL) {
+			  write(1, ERR_OP_DIR, strlen(ERR_OP_DIR));
+			  return 0;
+		  }
+		 
+	  
+		   while ((ent = readdir (dir)) != NULL){
+			   numf++;
+			   df->nomFitx = malloc(sizeof(char));
+				if ( (strcmp(ent->d_name, ".")!=0)   ){
+						strcpy(aux, ent->d_name);
+						llargadaNomFitxer = strlen(ent->d_name);
+						df->nomFitx = realloc(df->nomFitx, (llargadaNomFitxer+1)*sizeof(char));
+						strcpy(df->nomFitx, ent->d_name);
+						//df->nomFitx[llargadaNomFitxer+1] = '\0';
+						
+				}
+			}
+			
+			
+			//while (numf > 2){
+				//mirem si hi ha fitxer nou
+				numReal = numf - 2;
+				if (numf > 2){
+					printf("NUM FITXERS: %d\n", numReal);
+					//printem per pantalla que hi ha un nou fitxer i veiem de quin tipus es (text o jpg)
+					write(1, NOU, strlen(NOU));
+					if(df->nomFitx[16] == 't'){
+						df->tipus = 't';
+						int bytes = sprintf(buff, "Amb nom: %s\n", df->nomFitx); 
+						write(1, buff, bytes);
+						write(1, TIPUS_TXT, strlen(TIPUS_TXT));
+					}
+					if(df->nomFitx[16] == 'j'){
+						
+						df->tipus = 'j';
+						bytes = sprintf(buff, "Amb nom: %s\n", df->nomFitx); 
+						write(1, buff, bytes);
+						write(1, TIPUS_JPG, strlen(TIPUS_JPG));
+					}
+					df->numf = numf;
+					
+					
+				
+				
+					//borrem fitxer nou
+					aux1 = malloc((llargadaNomFitxer+6)*sizeof(char));
+					strcpy(aux1, "Files/");
+					strcat(aux1, df->nomFitx);
+					
+					//borrem el fitxer
+					status = remove(aux1);
+					if (status == 0){
+						bytes = sprintf(buff, "%s file deleted successfully %d.\n", df->nomFitx, status); 
+						write(1, buff, bytes);
+					}else{			
+						bytes = sprintf(buff, "Unable to delete the file %d\n",status); 
+						write(1, buff, bytes);
+					}
+				}
+				
+				while ((ent = readdir (dir)) != NULL){
+				   numf++;
+				   df->nomFitx = malloc(sizeof(char));
+					if ( (strcmp(ent->d_name, ".")!=0)   ){
+							strcpy(aux, ent->d_name);
+							llargadaNomFitxer = strlen(ent->d_name);
+							df->nomFitx = realloc(df->nomFitx, (llargadaNomFitxer+1)*sizeof(char));
+							strcpy(df->nomFitx, ent->d_name);
+							
+					}
+				}
+				printf("---%s.\n", aux1); 
+			//
+			}
+			
+			//tanquem directori	
+			closedir (dir);
+		  
+			return 0;
+}
